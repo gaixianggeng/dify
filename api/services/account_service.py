@@ -361,7 +361,7 @@ class RegisterService:
 
     @staticmethod
     def invite_new_member(tenant: Tenant, email: str, role: str = 'normal',
-                          inviter: Account = None) -> TenantAccountJoin:
+                          inviter: Account = None, password: str = None ) -> TenantAccountJoin:
         """Invite new member"""
         account = Account.query.filter_by(email=email).first()
 
