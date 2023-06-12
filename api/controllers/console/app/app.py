@@ -46,7 +46,8 @@ app_detail_fields = {
 
 
 def _get_app(app_id, tenant_id):
-    app = db.session.query(App).filter(App.id == app_id, App.tenant_id == tenant_id).first()
+    app = db.session.query(App).filter(
+        App.id == app_id, App.tenant_id == tenant_id).first()
     if not app:
         raise AppNotFoundError
     return app
@@ -88,14 +89,20 @@ class AppListApi(Resource):
     @account_initialization_required
     @marshal_with(app_pagination_fields)
     def get(self):
+        # # The role of the current user in the ta table must be admin or owner
+        # if current_user.current_tenant.current_role not in ['admin', 'owner']:
+        #     raise Forbidden()
         """Get app list"""
         parser = reqparse.RequestParser()
-        parser.add_argument('page', type=inputs.int_range(1, 99999), required=False, default=1, location='args')
-        parser.add_argument('limit', type=inputs.int_range(1, 100), required=False, default=20, location='args')
+        parser.add_argument('page', type=inputs.int_range(
+            1, 99999), required=False, default=1, location='args')
+        parser.add_argument('limit', type=inputs.int_range(
+            1, 100), required=False, default=20, location='args')
         args = parser.parse_args()
 
         app_models = db.paginate(
-            db.select(App).where(App.tenant_id == current_user.current_tenant_id).order_by(App.created_at.desc()),
+            db.select(App).where(App.tenant_id == current_user.current_tenant_id).order_by(
+                App.created_at.desc()),
             page=args['page'],
             per_page=args['limit'],
             error_out=False)
@@ -110,7 +117,8 @@ class AppListApi(Resource):
         """Create app"""
         parser = reqparse.RequestParser()
         parser.add_argument('name', type=str, required=True, location='json')
-        parser.add_argument('mode', type=str, choices=['completion', 'chat'], location='json')
+        parser.add_argument('mode', type=str, choices=[
+                            'completion', 'chat'], location='json')
         parser.add_argument('icon', type=str, location='json')
         parser.add_argument('icon_background', type=str, location='json')
         parser.add_argument('model_config', type=dict, location='json')
@@ -142,11 +150,15 @@ class AppListApi(Resource):
                 model_id="",
                 configs={},
                 opening_statement=model_configuration['opening_statement'],
-                suggested_questions=json.dumps(model_configuration['suggested_questions']),
-                suggested_questions_after_answer=json.dumps(model_configuration['suggested_questions_after_answer']),
-                more_like_this=json.dumps(model_configuration['more_like_this']),
+                suggested_questions=json.dumps(
+                    model_configuration['suggested_questions']),
+                suggested_questions_after_answer=json.dumps(
+                    model_configuration['suggested_questions_after_answer']),
+                more_like_this=json.dumps(
+                    model_configuration['more_like_this']),
                 model=json.dumps(model_configuration['model']),
-                user_input_form=json.dumps(model_configuration['user_input_form']),
+                user_input_form=json.dumps(
+                    model_configuration['user_input_form']),
                 pre_prompt=model_configuration['pre_prompt'],
                 agent_mode=json.dumps(model_configuration['agent_mode']),
             )
@@ -157,7 +169,8 @@ class AppListApi(Resource):
             model_config_template = model_templates[args['mode'] + '_default']
 
             app = App(**model_config_template['app'])
-            app_model_config = AppModelConfig(**model_config_template['model_config'])
+            app_model_config = AppModelConfig(
+                **model_config_template['model_config'])
 
         app.name = args['name']
         app.mode = args['mode']
@@ -258,6 +271,10 @@ class AppApi(Resource):
     @marshal_with(app_detail_fields_with_site)
     def get(self, app_id):
         """Get app detail"""
+        # The role of the current user in the ta table must be admin or owner
+        if current_user.current_tenant.current_role not in ['admin', 'owner']:
+            raise Forbidden()
+
         app_id = str(app_id)
         app = _get_app(app_id, current_user.current_tenant_id)
 
@@ -342,10 +359,12 @@ class AppSiteStatus(Resource):
     @marshal_with(app_detail_fields)
     def post(self, app_id):
         parser = reqparse.RequestParser()
-        parser.add_argument('enable_site', type=bool, required=True, location='json')
+        parser.add_argument('enable_site', type=bool,
+                            required=True, location='json')
         args = parser.parse_args()
         app_id = str(app_id)
-        app = db.session.query(App).filter(App.id == app_id, App.tenant_id == current_user.current_tenant_id).first()
+        app = db.session.query(App).filter(
+            App.id == app_id, App.tenant_id == current_user.current_tenant_id).first()
         if not app:
             raise AppNotFoundError
 
@@ -365,7 +384,8 @@ class AppApiStatus(Resource):
     @marshal_with(app_detail_fields)
     def post(self, app_id):
         parser = reqparse.RequestParser()
-        parser.add_argument('enable_api', type=bool, required=True, location='json')
+        parser.add_argument('enable_api', type=bool,
+                            required=True, location='json')
         args = parser.parse_args()
 
         app_id = str(app_id)
@@ -387,8 +407,10 @@ class AppRateLimit(Resource):
     @marshal_with(app_detail_fields)
     def post(self, app_id):
         parser = reqparse.RequestParser()
-        parser.add_argument('api_rpm', type=inputs.natural, required=False, location='json')
-        parser.add_argument('api_rph', type=inputs.natural, required=False, location='json')
+        parser.add_argument('api_rpm', type=inputs.natural,
+                            required=False, location='json')
+        parser.add_argument('api_rph', type=inputs.natural,
+                            required=False, location='json')
         args = parser.parse_args()
 
         app_id = str(app_id)
@@ -454,7 +476,8 @@ class AppCopy(Resource):
             one_or_none()
 
         if app_config:
-            copy_app_model_config = self.create_app_model_config_copy(app_config, copy_app.id)
+            copy_app_model_config = self.create_app_model_config_copy(
+                app_config, copy_app.id)
             db.session.add(copy_app_model_config)
             db.session.commit()
             copy_app.app_model_config_id = copy_app_model_config.id

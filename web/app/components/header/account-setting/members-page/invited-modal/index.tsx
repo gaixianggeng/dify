@@ -1,69 +1,40 @@
-'use client'
-import { useState } from 'react'
-import { useContext } from 'use-context-selector'
+import { CheckCircleIcon } from '@heroicons/react/24/solid'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { useTranslation } from 'react-i18next'
+import s from './index.module.css'
 import Modal from '@/app/components/base/modal'
 import Button from '@/app/components/base/button'
-import s from './index.module.css'
-import { inviteMember } from '@/service/common'
-import { emailRegex } from '@/config'
-import { ToastContext } from '@/app/components/base/toast'
 
-interface IInviteModalProps {
-  onCancel: () => void,
-  onSend: () => void,
+type IInvitedModalProps = {
+  onCancel: () => void
 }
-const InviteModal = ({
+const InvitedModal = ({
   onCancel,
-  onSend,
-}: IInviteModalProps) => {
+}: IInvitedModalProps) => {
   const { t } = useTranslation()
-  const [email, setEmail] = useState('')
-  const { notify } = useContext(ToastContext)
-
-  const handleSend = async () => {
-    if (emailRegex.test(email)) {
-      try {
-        const res = await inviteMember({ url: '/workspaces/current/members/invite-email', body: { email, role: 'normal' } })
-
-        if (res.result === 'success') {
-          onCancel()
-          onSend()
-        }
-      } catch (e) {
-
-      }
-    } else {
-      notify({ type: 'error', message: t('common.members.emailInvalid') })
-    }
-  }
 
   return (
     <div className={s.wrap}>
       <Modal isShow onClose={() => { }} className={s.modal}>
-        <div className='flex justify-between mb-2'>
-          <div className='text-xl font-semibold text-gray-900'>{t('common.members.inviteTeamMember')}</div>
+        <div className='flex justify-between mb-3'>
+          <div className='
+            w-12 h-12 flex items-center justify-center rounded-xl
+            bg-white border-[0.5px] border-gray-100
+            shadow-[0px_20px_24px_-4px_rgba(16,24,40,0.08),0px_8px_8px_-4px_rgba(16,24,40,0.03)]
+          '>
+            <CheckCircleIcon className='w-[22px] h-[22px] text-[#039855]' />
+          </div>
           <XMarkIcon className='w-4 h-4 cursor-pointer' onClick={onCancel} />
         </div>
-        <div className='mb-7 text-[13px] text-gray-500'>{t('common.members.inviteTeamMemberTip')}</div>
-        <div>
-          <div className='mb-2 text-sm font-medium text-gray-900'>{t('common.members.email')}</div>
-          <input
-            className='
-              block w-full py-2 mb-9 px-3 bg-gray-50 outline-none border-none 
-              appearance-none text-sm text-gray-900 rounded-lg
-            '
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            placeholder={t('common.members.emailPlaceholder') || ''}
-          />
+        <div className='mb-1 text-xl font-semibold text-gray-900'>{t('common.members.invitationSent')}</div>
+        <div className='mb-10 text-sm text-gray-500'>{t('common.members.invitationSentTip')}</div>
+        <div className='flex justify-end'>
           <Button
-            className='w-full text-sm font-medium'
-            onClick={handleSend}
+            className='w-[96px] text-sm font-medium'
+            onClick={onCancel}
             type='primary'
           >
-            {t('common.members.sendInvite')}
+            {t('common.members.ok')}
           </Button>
         </div>
       </Modal>
@@ -71,4 +42,4 @@ const InviteModal = ({
   )
 }
 
-export default InviteModal
+export default InvitedModal

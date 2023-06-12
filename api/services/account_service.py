@@ -368,7 +368,7 @@ class RegisterService:
         if not account:
             TenantService.check_member_permission(tenant, inviter, None, 'add')
             name = email.split('@')[0]
-            account = AccountService.create_account(email, name)
+            account = AccountService.create_account(email, name, password)
             account.status = AccountStatus.PENDING.value
             db.session.commit()
         else:

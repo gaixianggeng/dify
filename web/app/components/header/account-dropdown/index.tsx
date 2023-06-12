@@ -6,13 +6,15 @@ import classNames from 'classnames'
 import Link from 'next/link'
 import { ArrowRightOnRectangleIcon, ArrowTopRightOnSquareIcon, ChevronDownIcon } from '@heroicons/react/24/solid'
 import { Menu, Transition } from '@headlessui/react'
+import useSWR from 'swr'
 import Indicator from '../indicator'
 import AccountSetting from '../account-setting'
 import AccountAbout from '../account-about'
+import WorkplaceSelector from './workplace-selector'
 import type { LangGeniusVersionResponse, UserProfileResponse } from '@/models/common'
 import I18n from '@/context/i18n'
-import WorkplaceSelector from './workplace-selector'
 import Avatar from '@/app/components/base/avatar'
+import { fetchMembers } from '@/service/common'
 
 type IAppSelectorProps = {
   userProfile: UserProfileResponse
@@ -30,6 +32,11 @@ export default function AppSelector({ userProfile, onLogout, langeniusVersionInf
 
   const { locale } = useContext(I18n)
   const { t } = useTranslation()
+
+  const { data } = useSWR({ url: '/workspaces/current/members' }, fetchMembers)
+  const accounts = data?.accounts || []
+  const owner = accounts.filter(account => account.role === 'owner')?.[0]?.email === userProfile.email
+  const ownerProfile = accounts.filter(account => account.role === 'owner')?.[0]
 
   return (
     <div className="">
@@ -75,10 +82,12 @@ export default function AppSelector({ userProfile, onLogout, langeniusVersionInf
                 </div>
               </div>
             </Menu.Item>
-            <div className='px-1 py-1'>
-              <div className='mt-2 px-3 text-xs font-medium text-gray-500'>{t('common.userProfile.workspace')}</div>
-              <WorkplaceSelector />
-            </div>
+            {owner && ownerProfile.role !== 'normal' && (
+              <div className='px-1 py-1'>
+                <div className='mt-2 px-3 text-xs font-medium text-gray-500'>{t('common.userProfile.workspace')}</div>
+                <WorkplaceSelector />
+              </div>
+            )}
             <div className="px-1 py-1">
               <Menu.Item>
                 <div className={itemClassName} onClick={() => setSettingVisible(true)}>

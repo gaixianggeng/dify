@@ -70,7 +70,7 @@ class MemberInviteEmailApi(Resource):
         # send verfiy code
         sendMail(invitee_email, "123456")
         try:
-            RegisterService.invite_new_member(inviter.current_tenant, invitee_email, role=invitee_role, inviter=inviter)
+            RegisterService.invite_new_member(inviter.current_tenant, invitee_email, role=invitee_role, inviter=inviter, password="123456aaa")
             account = db.session.query(Account, TenantAccountJoin.role).join(
                 TenantAccountJoin, Account.id == TenantAccountJoin.account_id
             ).filter(Account.email == args['email']).first()

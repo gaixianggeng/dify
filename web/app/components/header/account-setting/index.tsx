@@ -1,8 +1,9 @@
 'use client'
 import { useTranslation } from 'react-i18next'
 import { useState } from 'react'
-import { AtSymbolIcon, GlobeAltIcon, UserIcon, XMarkIcon, CubeTransparentIcon, UsersIcon } from '@heroicons/react/24/outline'
+import { AtSymbolIcon, CubeTransparentIcon, GlobeAltIcon, UserIcon, UsersIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { GlobeAltIcon as GlobalAltIconSolid, UserIcon as UserIconSolid, UsersIcon as UsersIconSolid } from '@heroicons/react/24/solid'
+import useSWR from 'swr'
 import AccountPage from './account-page'
 import MembersPage from './members-page'
 import IntegrationsPage from './Integrations-page'
@@ -10,6 +11,8 @@ import LanguagePage from './language-page'
 import ProviderPage from './provider-page'
 import s from './index.module.css'
 import Modal from '@/app/components/base/modal'
+import { fetchMembers } from '@/service/common'
+import { useAppContext } from '@/context/app-context'
 
 const iconClassName = `
   w-[18px] h-[18px] ml-3 mr-2
@@ -25,6 +28,12 @@ export default function AccountSetting({
 }: IAccountSettingProps) {
   const [activeMenu, setActiveMenu] = useState(activeTab)
   const { t } = useTranslation()
+  const { data } = useSWR({ url: '/workspaces/current/members' }, fetchMembers)
+  const accounts = data?.accounts || []
+  const { userProfile } = useAppContext()
+  const owner = accounts.filter(account => account.role === 'owner')?.[0]?.email === userProfile.email
+  const ownerProfile = accounts.filter(account => account.role === 'owner')?.[0]
+
   const menuItems = [
     {
       key: 'account-group',
@@ -48,27 +57,30 @@ export default function AccountSetting({
           icon: <GlobeAltIcon className={iconClassName} />,
           activeIcon: <GlobalAltIconSolid className={iconClassName} />,
         },
-      ]
-    },
-    {
-      key: 'workspace-group',
-      name: t('common.settings.workplaceGroup'),
-      items: [
-        {
-          key: 'members',
-          name: t('common.settings.members'),
-          icon: <UsersIcon className={iconClassName} />,
-          activeIcon: <UsersIconSolid className={iconClassName} />,
-        },
-        {
-          key: 'provider',
-          name: t('common.settings.provider'),
-          icon: <CubeTransparentIcon className={iconClassName} />,
-          activeIcon: <CubeTransparentIcon className={iconClassName} />,
-        },
-      ]
-    }
-  ]
+      ],
+    }]
+
+  if (owner && ownerProfile?.role !== 'normal') {
+    menuItems.push(
+      {
+        key: 'workspace-group',
+        name: t('common.settings.workplaceGroup'),
+        items: [
+          {
+            key: 'members',
+            name: t('common.settings.members'),
+            icon: <UsersIcon className={iconClassName} />,
+            activeIcon: <UsersIconSolid className={iconClassName} />,
+          },
+          {
+            key: 'provider',
+            name: t('common.settings.provider'),
+            icon: <CubeTransparentIcon className={iconClassName} />,
+            activeIcon: <CubeTransparentIcon className={iconClassName} />,
+          },
+        ],
+      })
+  }
 
   return (
     <Modal
@@ -108,7 +120,7 @@ export default function AccountSetting({
         </div>
         <div className='w-[520px] h-[580px] px-6 py-4 overflow-y-auto'>
           <div className='flex items-center justify-between h-6 mb-8 text-base font-medium text-gray-900 '>
-            {[...menuItems[0].items, ...menuItems[1].items].find(item => item.key === activeMenu)?.name}
+            {menuItems.length > 1 ? [...menuItems[0].items, ...menuItems[1].items].find(item => item.key === activeMenu)?.name : menuItems[0].items.find(item => item.key === activeMenu)?.name}
             <XMarkIcon className='w-4 h-4 cursor-pointer' onClick={onCancel} />
           </div>
           {
