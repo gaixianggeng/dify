@@ -65,6 +65,9 @@ class DatasetListApi(Resource):
         limit = request.args.get('limit', default=20, type=int)
         ids = request.args.getlist('ids')
         provider = request.args.get('provider', default="vendor")
+        
+        if current_user.current_tenant.current_role not in ['admin', 'owner']:
+            raise Forbidden()
         if ids:
             datasets, total = DatasetService.get_datasets_by_ids(ids, current_user.current_tenant_id)
         else:
