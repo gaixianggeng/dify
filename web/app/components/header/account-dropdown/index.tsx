@@ -82,12 +82,13 @@ export default function AppSelector({ userProfile, onLogout, langeniusVersionInf
                 </div>
               </div>
             </Menu.Item>
-            {owner && ownerProfile.role !== 'normal' && (
-              <div className='px-1 py-1'>
-                <div className='mt-2 px-3 text-xs font-medium text-gray-500'>{t('common.userProfile.workspace')}</div>
-                <WorkplaceSelector />
+            <div className='px-1 py-1'>
+              <div className='mt-2 px-3 text-xs font-medium text-gray-500'>{t('common.userProfile.workspace')}
+                {owner && ownerProfile.role !== 'normal' && (
+                  <WorkplaceSelector />
+                )}
               </div>
-            )}
+            </div>
             <div className="px-1 py-1">
               <Menu.Item>
                 <div className={itemClassName} onClick={() => setSettingVisible(true)}>
