@@ -16,6 +16,7 @@ from libs.helper import get_remote_ip
 from libs.password import compare_password, hash_password
 from libs.rsa import generate_key_pair
 from models.account import *
+from extensions.ext_redis import redis_client
 
 
 class AccountService:
@@ -44,6 +45,47 @@ class AccountService:
         if account.password is None or not compare_password(password, account.password, account.password_salt):
             raise AccountLoginError('Invalid email or password.')
         return account
+    @staticmethod
+    def authenticate_verify_code(email: str, code: str) -> Account:
+        """authenticate account with email and password"""
+
+        account = Account.query.filter_by(email=email).first()
+        if not account:
+            raise AccountLoginError('Invalid email or verify code.')
+
+        if account.status == AccountStatus.BANNED.value or account.status == AccountStatus.CLOSED.value:
+            raise AccountLoginError('Account is banned or closed.')
+
+        if account.status == AccountStatus.PENDING.value:
+            account.status = AccountStatus.ACTIVE.value
+            account.initialized_at = datetime.utcnow()
+            db.session.commit()
+
+        r_code = redis_client.get(email)
+        print(code)
+        print(r_code)
+        if code is None or code != r_code.decode():
+            raise AccountLoginError('Invalid email or verify code.')
+        return account
+    
+    @staticmethod
+    def judge_account_exist(email: str) -> Account:
+        """judge account exist"""
+        return Account.query.filter_by(email=email).first()
+    
+    @staticmethod
+    def generate_verfiy_code() -> str:
+        """generate verfiy code"""
+        code = secrets.token_hex(3)
+        return code
+    @staticmethod
+    def save_code(email: str, code: str) -> None:
+        """save code to redis"""
+        redis_client.set(email, code, ex=60*5)
+        s = redis_client.get(email)
+        print(s)
+
+
 
     @staticmethod
     def update_account_password(account, password, new_password):

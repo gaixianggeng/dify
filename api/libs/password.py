@@ -5,10 +5,12 @@ import hashlib
 import re
 
 password_pattern = r"^(?=.*[a-zA-Z])(?=.*\d).{8,}$"
+""" verify pattern"""
+vefiy_pattern = r'^[0-9a-fA-F]{6}$'
 
 def valid_password(password):
     # Define a regex pattern for password rules
-    pattern = password_pattern
+    pattern = vefiy_pattern 
     # Check if the password matches the pattern
     if re.match(pattern, password) is not None:
         return password

@@ -12,12 +12,6 @@ from libs.helper import TimestampField
 from extensions.ext_database import db
 from models.account import Account, TenantAccountJoin
 from services.account_service import TenantService, RegisterService
-import smtplib
-from email.mime.text import MIMEText
-from email.header import Header
-from email.utils import make_msgid
-import time 
-
 
 
 account_fields = {
@@ -68,9 +62,9 @@ class MemberInviteEmailApi(Resource):
         inviter = current_user
 
         # send verfiy code
-        sendMail(invitee_email, "123456")
+        # sendMail(invitee_email, "123456")
         try:
-            RegisterService.invite_new_member(inviter.current_tenant, invitee_email, role=invitee_role, inviter=inviter, password="123456aaa")
+            RegisterService.invite_new_member(inviter.current_tenant, invitee_email, role=invitee_role, inviter=inviter) 
             account = db.session.query(Account, TenantAccountJoin.role).join(
                 TenantAccountJoin, Account.id == TenantAccountJoin.account_id
             ).filter(Account.email == args['email']).first()
@@ -89,36 +83,6 @@ class MemberInviteEmailApi(Resource):
         # todo:413
 
         return {'result': 'success', 'account': account}, 201
-
-
-def sendMail(to, code):
-    send = "support@code89757.com"
-    sendMailPassword = "nKg5uebnrgURPVe3"
-     # read html file
-    with open('./assets/verify.html', 'r') as f:
-        content = f.read()
-
-    # replace code in the content
-    body = content.replace('{code}', code, 1)
-
-    # create MIMEText object
-    msg = MIMEText(body, 'html', 'utf-8')
-
-    # specify headers
-    msg['From'] = Header(f"AI.89757 <{send}>")
-    msg['To'] = Header(to, 'utf-8')
-    msg['Subject'] = Header('AI.89757 登录验证码', 'utf-8')
-    msg['Content-Type'] = 'text/html; charset=UTF-8'
-    msg['Message-ID'] = make_msgid(domain='localhost')
-
-    # send mail
-    try:
-        server = smtplib.SMTP_SSL("hwsmtp.exmail.qq.com", 465)
-        server.login(send, sendMailPassword)
-        server.sendmail(send, [to], msg.as_string())
-        server.quit()
-    except Exception as e:
-        print(f"Error occurred: {e}")
 
 
 

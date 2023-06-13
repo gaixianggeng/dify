@@ -2,16 +2,15 @@
 import React, { useEffect, useReducer, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRouter } from 'next/navigation'
-import { IS_CE_EDITION } from '@/config'
 import classNames from 'classnames'
 import useSWR from 'swr'
 import Link from 'next/link'
+import Toast from '../components/base/toast'
 import style from './page.module.css'
 // import Tooltip from '@/app/components/base/tooltip/index'
-import Toast from '../components/base/toast'
+import { IS_CE_EDITION, apiPrefix } from '@/config'
 import Button from '@/app/components/base/button'
 import { login, oauth } from '@/service/common'
-import { apiPrefix } from '@/config'
 
 const validEmailReg = /^[\w\.-]+@([\w-]+\.)+[\w-]{2,}$/
 
@@ -69,10 +68,37 @@ const NormalForm = () => {
   })
 
   const [showPassword, setShowPassword] = useState(false)
+  const [hasSend, hadSendVerifyCode] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
   const [isLoading, setIsLoading] = useState(false)
+  const handleEmailVerify = async () => {
+    if (!validEmailReg.test(email)) {
+      Toast.notify({
+        type: 'error',
+        message: t('login.error.emailInValid'),
+      })
+      return
+    }
+    console.log('hadSendVerifyCode', hasSend)
+    try {
+      hadSendVerifyCode(true)
+      setIsLoading(true)
+      await login({
+        url: '/send_verify_code',
+        body: {
+          email,
+        },
+      })
+    }
+    finally {
+      setIsLoading(false)
+    }
+
+    console.log('hadSendVerifyCode2', hasSend)
+  }
+
   const handleEmailPasswordLogin = async () => {
     if (!validEmailReg.test(email)) {
       Toast.notify({
@@ -92,7 +118,8 @@ const NormalForm = () => {
         },
       })
       router.push('/')
-    } finally {
+    }
+    finally {
       setIsLoading(false)
     }
   }
@@ -201,6 +228,7 @@ const NormalForm = () => {
                     <input
                       value={email}
                       onChange={e => setEmail(e.target.value)}
+                      onBlur={e => hadSendVerifyCode(false)}
                       id="email"
                       type="email"
                       autoComplete="email"
@@ -240,14 +268,20 @@ const NormalForm = () => {
                   focus:outline-none focus:ring-indigo-500 focus:border-indigo-500
                   rounded-md shadow-sm placeholder-gray-400 sm:text-sm pr-10`}
                     />
-                    <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                      <button
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-0">
+                      {/* <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
                         className="text-gray-400 hover:text-gray-500 focus:outline-none focus:text-gray-500"
                       >
                         {showPassword ? '👀' : '😝'}
-                      </button>
+                      </button> */}
+
+                      <Button
+                        type={hasSend ? '' : 'primary'}
+                        onClick={handleEmailVerify}
+                        disabled={hasSend}
+                      >{t('login.verifyBtn')}</Button>
                     </div>
                   </div>
                 </div>

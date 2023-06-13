@@ -11,6 +11,13 @@ from controllers.console.setup import setup_required
 from libs.helper import email
 from libs.password import valid_password
 from services.account_service import AccountService, TenantService
+import smtplib
+from email.mime.text import MIMEText
+from email.header import Header
+from email.utils import make_msgid
+import time 
+
+
 
 
 class LoginApi(Resource):
@@ -28,7 +35,8 @@ class LoginApi(Resource):
         # todo: Verify the recaptcha
 
         try:
-            account = AccountService.authenticate(args['email'], args['password'])
+            # account = AccountService.authenticate(args['email'], args['password'])
+            account = AccountService.authenticate_verify_code(args['email'],args['password'])
         except services.errors.account.AccountLoginError:
             return {'code': 'unauthorized', 'message': 'Invalid email or password'}, 401
 
@@ -52,6 +60,65 @@ class LogoutApi(Resource):
         flask.session.pop('workspace_id', None)
         flask_login.logout_user()
         return {'result': 'success'}
+
+class VerifyCodeApi(Resource):
+
+    @setup_required
+    def post(self):
+        """Authenticate user and login."""
+        parser = reqparse.RequestParser()
+        parser.add_argument('email', type=email, required=True, location='json')
+        args = parser.parse_args()
+
+        # todo: Verify the recaptcha
+        try:
+            account = AccountService.judge_account_exist(args['email'])
+        except services.errors.account.AccountLoginError:
+            return {'code': 'unauthorized', 'message': 'Invalid email'}, 401
+
+        try:
+            TenantService.switch_tenant(account)
+        except Exception:
+            raise AccountNotLinkTenantError("Account not link tenant")
+
+        code = AccountService.generate_verfiy_code()   
+        sendMail(args['email'], code=code)        
+        """ save code to redis """
+        AccountService.save_code(args['email'], code)
+        # todo: return the user info
+
+        return {'result': 'success'}
+
+
+def sendMail(to, code):
+    send = "support@code89757.com"
+    sendMailPassword = "nKg5uebnrgURPVe3"
+     # read html file
+    with open('./assets/verify.html', 'r') as f:
+        content = f.read()
+
+    # replace code in the content
+    body = content.replace('{code}', code, 1)
+
+    # create MIMEText object
+    msg = MIMEText(body, 'html', 'utf-8')
+
+    # specify headers
+    msg['From'] = Header(f"AI.89757 <{send}>")
+    msg['To'] = Header(to, 'utf-8')
+    msg['Subject'] = Header('AI.89757 登录验证码', 'utf-8')
+    msg['Content-Type'] = 'text/html; charset=UTF-8'
+    msg['Message-ID'] = make_msgid(domain='localhost')
+
+    # send mail
+    try:
+        server = smtplib.SMTP_SSL("hwsmtp.exmail.qq.com", 465)
+        server.login(send, sendMailPassword)
+        server.sendmail(send, [to], msg.as_string())
+        server.quit()
+    except Exception as e:
+        print(f"Error occurred: {e}")
+
 
 
 class ResetPasswordApi(Resource):
@@ -107,3 +174,4 @@ class ResetPasswordApi(Resource):
 
 api.add_resource(LoginApi, '/login')
 api.add_resource(LogoutApi, '/logout')
+api.add_resource(VerifyCodeApi, '/send_verify_code')
