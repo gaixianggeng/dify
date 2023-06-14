@@ -81,7 +81,6 @@ const NormalForm = () => {
       })
       return
     }
-    console.log('hadSendVerifyCode', hasSend)
     try {
       hadSendVerifyCode(true)
       setIsLoading(true)
@@ -95,8 +94,6 @@ const NormalForm = () => {
     finally {
       setIsLoading(false)
     }
-
-    console.log('hadSendVerifyCode2', hasSend)
   }
 
   const handleEmailPasswordLogin = async () => {
@@ -281,7 +278,7 @@ const NormalForm = () => {
                         type={hasSend ? '' : 'primary'}
                         onClick={handleEmailVerify}
                         disabled={hasSend}
-                      >{t('login.verifyBtn')}</Button>
+                      >{hasSend ? t('login.hasSend') : t('login.verifyBtn')}</Button>
                     </div>
                   </div>
                 </div>

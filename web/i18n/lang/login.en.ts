@@ -7,6 +7,7 @@ const translation = {
   forget: 'Forgot your password?',
   signBtn: 'Sign in',
   verifyBtn: 'click to send',
+  hasSend: 'Sent',
   installBtn: 'Setting',
   setAdminAccount: 'Setting up an admin account',
   setAdminAccountDesc: 'Maximum privileges for admin account, which can be used to create applications and manage LLM providers, etc.',

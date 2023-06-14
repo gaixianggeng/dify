@@ -31,9 +31,9 @@ export default function AccountSetting({
   const { data } = useSWR({ url: '/workspaces/current/members' }, fetchMembers)
   const accounts = data?.accounts || []
   const { userProfile } = useAppContext()
-  const owner = accounts.filter(account => account.role === 'owner')?.[0]?.email === userProfile.email
-  const ownerProfile = accounts.filter(account => account.role === 'owner')?.[0]
-
+  // const owner = accounts.filter(account => account.role in ['admin', 'owner'])?.[0]?.email === userProfile.email
+  const owner = ['admin', 'owner'].includes(accounts.filter(account => account.email === userProfile.email)?.[0]?.role)
+  const ownerProfile = accounts.filter(account => account.email === userProfile.email)?.[0]
   const menuItems = [
     {
       key: 'account-group',

@@ -7,6 +7,7 @@ const translation = {
   forget: '忘记密码？',
   signBtn: '登录',
   verifyBtn: '点击发送',
+  hasSend: '已发送',
   installBtn: '设置',
   setAdminAccount: '设置管理员账户',
   setAdminAccountDesc: '管理员拥有的最大权限，可用于创建应用和管理 LLM 供应商等。',

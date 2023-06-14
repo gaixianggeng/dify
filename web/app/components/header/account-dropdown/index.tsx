@@ -35,8 +35,8 @@ export default function AppSelector({ userProfile, onLogout, langeniusVersionInf
 
   const { data } = useSWR({ url: '/workspaces/current/members' }, fetchMembers)
   const accounts = data?.accounts || []
-  const owner = accounts.filter(account => account.role === 'owner')?.[0]?.email === userProfile.email
-  const ownerProfile = accounts.filter(account => account.role === 'owner')?.[0]
+  const owner = ['admin', 'owner'].includes(accounts.filter(account => account.email === userProfile.email)?.[0]?.role)
+  const ownerProfile = accounts.filter(account => account.email === userProfile.email)?.[0]
 
   return (
     <div className="">
