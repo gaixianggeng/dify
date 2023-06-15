@@ -258,7 +258,8 @@ const NormalForm = () => {
                       id="password"
                       value={password}
                       onChange={e => setPassword(e.target.value)}
-                      type={showPassword ? 'text' : 'password'}
+                      // type={showPassword ? 'text' : 'password'}
+                      type='text'
                       autoComplete="current-password"
                       className={`appearance-none block w-full px-3 py-2
                   border border-gray-300
