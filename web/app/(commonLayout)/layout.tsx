@@ -1,6 +1,7 @@
-import React from "react";
+import React from 'react'
 import type { FC } from 'react'
-import LayoutClient, { ICommonLayoutProps } from "./_layout-client";
+import type { ICommonLayoutProps } from './_layout-client'
+import LayoutClient from './_layout-client'
 import GA, { GaType } from '@/app/components/base/ga'
 
 const Layout: FC<ICommonLayoutProps> = ({ children }) => {
@@ -13,7 +14,7 @@ const Layout: FC<ICommonLayoutProps> = ({ children }) => {
 }
 
 export const metadata = {
-  title: 'Dify',
+  title: 'AI.89757',
 }
 
 export default Layout

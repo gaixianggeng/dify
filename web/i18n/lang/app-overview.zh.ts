@@ -45,7 +45,7 @@ const translation = {
           name: 'Fork 客户端代码修改后部署到 Vercel（推荐）',
           step1: 'Fork 客户端代码并修改',
           step1Tip: '点击此处 Fork 源码到你的 GitHub 中，然后修改代码',
-          step1Operation: 'Dify-WebClient',
+          step1Operation: 'AI.89757-WebClient',
           step2: '配置 Web APP',
           step2Tip: '复制 Web API 秘钥 和 APP ID 拷贝到客户端代码 config/index.ts 中',
           step3: '部署到 Vercel 中',
